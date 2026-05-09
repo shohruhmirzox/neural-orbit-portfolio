@@ -1,5 +1,11 @@
 export type PlanetKey = "ecodrop" | "lumora" | "research" | "venture" | "acoustify";
 
+export interface PlanetLink {
+  label: string;
+  href: string;
+  kind: "external" | "instagram" | "telegram" | "linkedin" | "site";
+}
+
 export interface PlanetData {
   key: PlanetKey;
   name: string;
@@ -15,6 +21,7 @@ export interface PlanetData {
   angle: number;
   tilt: number;
   texture: "lush" | "warm" | "violet" | "chrome" | "wave";
+  links: PlanetLink[];
 }
 
 export const PLANETS: PlanetData[] = [
@@ -34,6 +41,7 @@ export const PLANETS: PlanetData[] = [
     angle: 0,
     tilt: 0.2,
     texture: "lush",
+    links: [{ label: "Visit EcoDrop", href: "https://ecodrop.framer.website/en/", kind: "site" }],
   },
   {
     key: "lumora",
@@ -51,6 +59,7 @@ export const PLANETS: PlanetData[] = [
     angle: 1.3,
     tilt: -0.15,
     texture: "warm",
+    links: [{ label: "Lumora on Telegram", href: "https://t.me/thelumoraa", kind: "telegram" }],
   },
   {
     key: "research",
@@ -59,7 +68,7 @@ export const PLANETS: PlanetData[] = [
     tagline: "HAT pathology & neuroeconomics simulations.",
     description:
       "Computational neuroscience research on Human African Trypanosomiasis (HAT) and decision-making models bridging neural circuits with economic behavior.",
-    highlights: ["HAT mechanism modeling", "Neuroeconomics sims", "Toronto-bound (Pearson Scholar)", "Open datasets"],
+    highlights: ["HAT mechanism modeling", "Neuroeconomics sims", "Pearson Scholar @ UofT", "Open datasets"],
     color: "#a78bfa",
     emissive: "#7c3aed",
     orbitRadius: 9.0,
@@ -68,6 +77,9 @@ export const PLANETS: PlanetData[] = [
     angle: 2.6,
     tilt: 0.35,
     texture: "violet",
+    links: [
+      { label: "LinkedIn", href: "https://www.linkedin.com/in/shohruhmirzo-khudaykulov/", kind: "linkedin" },
+    ],
   },
   {
     key: "venture",
@@ -85,6 +97,7 @@ export const PLANETS: PlanetData[] = [
     angle: 4.0,
     tilt: -0.25,
     texture: "chrome",
+    links: [{ label: "LvlUp Ventures", href: "https://www.lvlup.vc/", kind: "site" }],
   },
   {
     key: "acoustify",
@@ -102,5 +115,6 @@ export const PLANETS: PlanetData[] = [
     angle: 5.4,
     tilt: 0.1,
     texture: "wave",
+    links: [{ label: "Instagram @acoustify.music", href: "https://www.instagram.com/acoustify.music/", kind: "instagram" }],
   },
 ];

@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Brain, GraduationCap } from "lucide-react";
+import { Brain, GraduationCap, Volume2, VolumeX } from "lucide-react";
 import { NeuralScene } from "@/components/portfolio/NeuralScene";
 import { PlanetCard } from "@/components/portfolio/PlanetCard";
 import { NeuralLoader } from "@/components/portfolio/NeuralLoader";
 import { PLANETS, type PlanetData, type PlanetKey } from "@/lib/portfolio-data";
+import { playClick, playWhoosh, toggleAmbient } from "@/lib/audio-reactive";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -30,11 +31,18 @@ function Index() {
   const [loading, setLoading] = useState(true);
   const [activeKey, setActiveKey] = useState<PlanetKey | null>(null);
   const [hoverNucleus, setHoverNucleus] = useState(false);
+  const [ambientOn, setAmbientOn] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1900);
     return () => clearTimeout(t);
   }, []);
+
+  const handleSelect = (p: PlanetData | null) => {
+    playClick();
+    if (p && p.key !== activeKey) playWhoosh();
+    setActiveKey(p ? p.key : null);
+  };
 
   const activePlanet: PlanetData | null =
     PLANETS.find((p) => p.key === activeKey) ?? null;
@@ -63,15 +71,28 @@ function Index() {
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.1, duration: 0.6 }}
-          className="pointer-events-auto hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-muted-foreground backdrop-blur md:flex"
-        >
-          <GraduationCap size={14} className="text-[var(--gold)]" />
-          Lester B. Pearson Scholar — University of Toronto
-        </motion.div>
+        <div className="pointer-events-auto flex items-center gap-2">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.1, duration: 0.6 }}
+            className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-muted-foreground backdrop-blur md:flex"
+          >
+            <GraduationCap size={14} className="text-[var(--gold)]" />
+            Lester B. Pearson Scholar — University of Toronto
+          </motion.div>
+          <motion.button
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.15, duration: 0.6 }}
+            onClick={() => { playClick(); setAmbientOn(toggleAmbient()); }}
+            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-muted-foreground backdrop-blur transition hover:text-foreground"
+            aria-label="Toggle ambient space sound"
+          >
+            {ambientOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
+            <span className="hidden sm:inline">{ambientOn ? "Ambient on" : "Ambient off"}</span>
+          </motion.button>
+        </div>
       </header>
 
       {/* Bottom hint */}
@@ -123,7 +144,7 @@ function Index() {
           return (
             <button
               key={p.key}
-              onClick={() => setActiveKey(isActive ? null : p.key)}
+              onClick={() => handleSelect(isActive ? null : p)}
               className={`group flex items-center gap-2.5 rounded-full border px-3 py-1.5 text-xs backdrop-blur transition ${
                 isActive
                   ? "border-white/40 bg-white/10 text-foreground"
@@ -144,12 +165,12 @@ function Index() {
       <div className="absolute inset-0 z-10">
         <NeuralScene
           activeKey={activeKey}
-          onSelectPlanet={(p) => setActiveKey(p ? p.key : null)}
+          onSelectPlanet={handleSelect}
           onHoverNucleus={setHoverNucleus}
         />
       </div>
 
-      <PlanetCard planet={activePlanet} onClose={() => setActiveKey(null)} />
+      <PlanetCard planet={activePlanet} onClose={() => handleSelect(null)} />
     </main>
   );
 }
