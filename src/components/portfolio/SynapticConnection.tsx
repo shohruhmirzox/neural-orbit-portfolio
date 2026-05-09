@@ -25,14 +25,23 @@ export function SynapticConnection({
 
   const segments = 60;
 
-  const { geometry, curveRef } = useMemo(() => {
+  const { geometry, curveRef, lineObject } = useMemo(() => {
     const curveRef = { current: null as THREE.CatmullRomCurve3 | null };
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
       new THREE.BufferAttribute(new Float32Array((segments + 1) * 3), 3)
     );
-    return { geometry, curveRef };
+    const mat = new THREE.LineBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.4,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const lineObject = new THREE.Line(geometry, mat);
+    return { geometry, curveRef, lineObject };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useFrame((state) => {
@@ -76,20 +85,7 @@ export function SynapticConnection({
 
   return (
     <group>
-      <primitive
-        object={(() => {
-          const mat = new THREE.LineBasicMaterial({
-            color,
-            transparent: true,
-            opacity: 0.4,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-          });
-          const line = new THREE.Line(geometry, mat);
-          return line;
-        })()}
-        ref={lineRef as unknown as React.Ref<THREE.Object3D>}
-      />
+      <primitive object={lineObject} ref={lineRef as unknown as React.Ref<THREE.Object3D>} />
       {Array.from({ length: pulseCount }).map((_, i) => (
         <mesh
           key={i}
