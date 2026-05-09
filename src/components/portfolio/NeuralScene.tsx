@@ -38,7 +38,7 @@ export function NeuralScene({ activeKey, onSelectPlanet, onHoverNucleus }: Props
     [activeKey]
   );
 
-  const getAudio = useCallback(() => audioReactive.getLevel() / 100, []);
+  const getAudio = useCallback(() => audioReactive.getLevel(), []);
 
   return (
     <Canvas
