@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Brain, GraduationCap, Volume2, VolumeX } from "lucide-react";
+import { Brain, GraduationCap, Volume2, VolumeX, Gauge, Telescope } from "lucide-react";
 import { NeuralScene } from "@/components/portfolio/NeuralScene";
 import { PlanetCard } from "@/components/portfolio/PlanetCard";
 import { NeuralLoader } from "@/components/portfolio/NeuralLoader";
+import { Slider } from "@/components/ui/slider";
 import { PLANETS, type PlanetData, type PlanetKey } from "@/lib/portfolio-data";
 import { playClick, playWhoosh, toggleAmbient } from "@/lib/audio-reactive";
 
@@ -32,6 +33,7 @@ function Index() {
   const [activeKey, setActiveKey] = useState<PlanetKey | null>(null);
   const [hoverNucleus, setHoverNucleus] = useState(false);
   const [ambientOn, setAmbientOn] = useState(false);
+  const [timeScale, setTimeScale] = useState(1);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1900);
@@ -51,7 +53,7 @@ function Index() {
     <main className="relative h-screen w-screen overflow-hidden">
       <AnimatePresence>{loading && <NeuralLoader key="loader" />}</AnimatePresence>
 
-      {/* Top-left brand */}
+      {/* Top bar */}
       <header className="pointer-events-none absolute left-0 right-0 top-0 z-20 flex items-start justify-between p-5 md:p-8">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -105,7 +107,7 @@ function Index() {
         <div className="rounded-full border border-white/10 bg-black/30 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground backdrop-blur">
           {activePlanet
             ? "Click nucleus or close to return"
-            : "Click a planet — orbit a knowledge pillar"}
+            : "Drag to rotate · scroll to zoom · click a planet"}
         </div>
       </motion.div>
 
@@ -132,39 +134,97 @@ function Index() {
         )}
       </AnimatePresence>
 
-      {/* Planet quick-nav */}
+      {/* Left: System Overview HUD */}
       <motion.aside
-        initial={{ opacity: 0, x: 20 }}
+        initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 2.2, duration: 0.6 }}
-        className="pointer-events-auto absolute right-4 top-1/2 z-20 hidden -translate-y-1/2 flex-col gap-2 md:flex"
+        className="pointer-events-auto absolute left-4 top-1/2 z-20 hidden -translate-y-1/2 md:block"
       >
-        {PLANETS.map((p) => {
-          const isActive = activeKey === p.key;
-          return (
-            <button
-              key={p.key}
-              onClick={() => handleSelect(isActive ? null : p)}
-              className={`group flex items-center gap-2.5 rounded-full border px-3 py-1.5 text-xs backdrop-blur transition ${
-                isActive
-                  ? "border-white/40 bg-white/10 text-foreground"
-                  : "border-white/10 bg-white/[0.03] text-muted-foreground hover:border-white/25 hover:text-foreground"
-              }`}
-            >
-              <span
-                className="h-2 w-2 rounded-full transition group-hover:scale-125"
-                style={{ background: p.color, boxShadow: `0 0 10px ${p.color}` }}
-              />
-              <span className="font-mono uppercase tracking-[0.18em]">{p.name}</span>
-            </button>
-          );
-        })}
+        <div className="glass min-w-[220px] rounded-2xl p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Telescope size={14} className="text-[var(--synapse)]" />
+            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+              System Overview
+            </p>
+          </div>
+          <ul className="flex flex-col gap-1">
+            {PLANETS.map((p) => {
+              const isActive = activeKey === p.key;
+              return (
+                <li key={p.key}>
+                  <button
+                    onClick={() => handleSelect(isActive ? null : p)}
+                    className={`group flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition ${
+                      isActive
+                        ? "border-white/30 bg-white/10"
+                        : "border-transparent hover:border-white/15 hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className="h-2.5 w-2.5 flex-none rounded-full transition group-hover:scale-125"
+                        style={{ background: p.color, boxShadow: `0 0 12px ${p.color}` }}
+                      />
+                      <div className="leading-tight">
+                        <p className="text-xs font-semibold tracking-tight text-foreground">
+                          {p.name}
+                        </p>
+                        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+                          {p.pillar}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </motion.aside>
+
+      {/* Bottom-left: Time Scale Controller */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.3, duration: 0.6 }}
+        className="pointer-events-auto absolute bottom-16 left-4 z-20 md:bottom-20"
+      >
+        <div className="glass w-[230px] rounded-2xl p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Gauge size={13} className="text-[var(--bio)]" />
+              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                Time Scale
+              </p>
+            </div>
+            <p
+              className="font-mono text-xs tabular-nums text-foreground"
+              style={{ textShadow: "0 0 10px var(--bio)" }}
+            >
+              {timeScale.toFixed(2)}×
+            </p>
+          </div>
+          <Slider
+            value={[timeScale]}
+            min={0}
+            max={4}
+            step={0.05}
+            onValueChange={(v) => setTimeScale(v[0])}
+          />
+          <div className="mt-1.5 flex justify-between font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/70">
+            <span>Pause</span>
+            <span>1×</span>
+            <span>4×</span>
+          </div>
+        </div>
+      </motion.div>
 
       {/* 3D Scene */}
       <div className="absolute inset-0 z-10">
         <NeuralScene
           activeKey={activeKey}
+          timeScale={timeScale}
           onSelectPlanet={handleSelect}
           onHoverNucleus={setHoverNucleus}
         />
