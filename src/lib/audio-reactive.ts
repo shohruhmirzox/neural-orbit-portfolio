@@ -120,27 +120,39 @@ export function playClick() {
   o.stop(ctx.currentTime + 0.13);
 }
 
-export function playWhoosh() {
-  const ctx = sfxCtxGet();
-  const buf = ctx.createBuffer(1, ctx.sampleRate * 0.8, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < data.length; i++) {
-    const t = i / data.length;
-    data[i] = (Math.random() * 2 - 1) * (1 - t) * Math.pow(1 - t, 0.5);
+// Cinematic low-pass whoosh + deep resonance hum, powered by Tone.js
+import * as Tone from "tone";
+let toneStarted = false;
+async function ensureTone() {
+  if (!toneStarted) {
+    await Tone.start();
+    toneStarted = true;
   }
-  const noise = ctx.createBufferSource();
-  noise.buffer = buf;
-  const filter = ctx.createBiquadFilter();
-  filter.type = "bandpass";
-  filter.frequency.setValueAtTime(400, ctx.currentTime);
-  filter.frequency.exponentialRampToValueAtTime(1800, ctx.currentTime + 0.6);
-  filter.Q.value = 6;
-  const g = ctx.createGain();
-  g.gain.setValueAtTime(0.25, ctx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
-  noise.connect(filter).connect(g).connect(ctx.destination);
-  noise.start();
-  noise.stop(ctx.currentTime + 0.8);
+}
+
+export async function playWhoosh() {
+  await ensureTone();
+  const now = Tone.now();
+  // Low-pass cinematic whoosh
+  const noise = new Tone.Noise("pink").start(now);
+  const filter = new Tone.Filter({ type: "lowpass", frequency: 200, Q: 4 });
+  const gain = new Tone.Gain(0).toDestination();
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.gain.linearRampTo(0.45, 0.08, now);
+  gain.gain.linearRampTo(0.0, 0.85, now + 0.08);
+  filter.frequency.exponentialRampTo(2400, 0.7, now);
+  noise.stop(now + 1.0);
+  setTimeout(() => { noise.dispose(); filter.dispose(); gain.dispose(); }, 1300);
+
+  // Deep resonance sub-hum
+  const sub = new Tone.Oscillator(48, "sine").start(now);
+  const subGain = new Tone.Gain(0).toDestination();
+  sub.connect(subGain);
+  subGain.gain.linearRampTo(0.22, 0.12, now);
+  subGain.gain.linearRampTo(0.0, 1.1, now + 0.12);
+  sub.stop(now + 1.3);
+  setTimeout(() => { sub.dispose(); subGain.dispose(); }, 1600);
 }
 
 // Ambient pad — two detuned oscillators + slow LFO on a lowpass.

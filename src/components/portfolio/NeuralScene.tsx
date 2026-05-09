@@ -1,6 +1,6 @@
 import { Suspense, useRef, useState, useMemo, useCallback, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Stars } from "@react-three/drei";
+import { OrbitControls, Stars, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import { NeuralNucleus } from "./NeuralNucleus";
 import { Planet, type PlanetHandle } from "./Planet";
@@ -8,9 +8,11 @@ import { SynapticConnection } from "./SynapticConnection";
 import { NeuralStarfield } from "./NeuralStarfield";
 import { PLANETS, type PlanetData, type PlanetKey } from "@/lib/portfolio-data";
 import { audioReactive } from "@/lib/audio-reactive";
+import { makeNebulaSkybox, makeFlareTexture } from "@/lib/planet-textures";
 
 interface Props {
   activeKey: PlanetKey | null;
+  timeScale: number;
   onSelectPlanet: (p: PlanetData | null) => void;
   onHoverNucleus: (h: boolean) => void;
 }
@@ -18,7 +20,7 @@ interface Props {
 const NUCLEUS = new THREE.Vector3(0, 0, 0);
 const DEFAULT_POS = new THREE.Vector3(0, 8, 22);
 
-export function NeuralScene({ activeKey, onSelectPlanet, onHoverNucleus }: Props) {
+export function NeuralScene({ activeKey, timeScale, onSelectPlanet, onHoverNucleus }: Props) {
   const planetRefs = useRef<Record<string, PlanetHandle | null>>({});
   const [, force] = useState(0);
 
@@ -39,30 +41,47 @@ export function NeuralScene({ activeKey, onSelectPlanet, onHoverNucleus }: Props
   );
 
   const getAudio = useCallback(() => audioReactive.getLevel(), []);
+  const nebula = useMemo(() => makeNebulaSkybox(), []);
+  const flare = useMemo(() => makeFlareTexture(), []);
 
   return (
     <Canvas
       dpr={[1, 2]}
-      camera={{ position: [0, 8, 22], fov: 55, near: 0.1, far: 400 }}
+      camera={{ position: [0, 8, 22], fov: 55, near: 0.1, far: 600 }}
       gl={{ antialias: true, alpha: true }}
     >
-      <color attach="background" args={["#020617"]} />
-      <fog attach="fog" args={["#0b0726", 45, 110]} />
-      <ambientLight intensity={0.3} />
-      <directionalLight position={[10, 10, 5]} intensity={0.45} color="#a78bfa" />
+      <SceneBackground texture={nebula} />
+      <fog attach="fog" args={["#0b0726", 60, 150]} />
+      <ambientLight intensity={0.35} />
+      <directionalLight position={[10, 10, 5]} intensity={0.5} color="#a78bfa" />
 
       <Suspense fallback={null}>
-        {/* deep space skybox */}
-        <Stars radius={150} depth={80} count={6000} factor={4} saturation={0.6} fade speed={0.4} />
+        <Stars radius={220} depth={120} count={9000} factor={4} saturation={0.8} fade speed={0.4} />
         <NeuralStarfield count={1400} />
+
+        {/* anime-style meteor sparkles drifting through the scene */}
+        <Sparkles count={120} scale={[80, 40, 80]} size={3} speed={0.6} color="#c4b5fd" opacity={0.8} />
+        <Sparkles count={50} scale={[60, 30, 60]} size={2} speed={1.2} color="#7dd3fc" opacity={0.7} />
 
         <NeuralNucleus
           onHover={onHoverNucleus}
           onClick={() => onSelectPlanet(null)}
         />
 
+        {/* Lens flare sprite at the nucleus */}
+        <sprite scale={[6, 6, 1]} renderOrder={2}>
+          <spriteMaterial
+            map={flare}
+            transparent
+            depthWrite={false}
+            depthTest={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </sprite>
+
         <ResponsivePlanets
           activeKey={activeKey}
+          timeScale={timeScale}
           onSelectPlanet={onSelectPlanet}
           setRef={setRef}
           getAudio={getAudio}
@@ -80,21 +99,32 @@ export function NeuralScene({ activeKey, onSelectPlanet, onHoverNucleus }: Props
   );
 }
 
+function SceneBackground({ texture }: { texture: THREE.Texture }) {
+  const { scene } = useThree();
+  useEffect(() => {
+    const prev = scene.background;
+    scene.background = texture;
+    return () => { scene.background = prev; };
+  }, [scene, texture]);
+  return null;
+}
+
 function ResponsivePlanets({
   activeKey,
+  timeScale,
   onSelectPlanet,
   setRef,
   getAudio,
   planetRefs,
 }: {
   activeKey: PlanetKey | null;
+  timeScale: number;
   onSelectPlanet: (p: PlanetData | null) => void;
   setRef: (key: string) => (h: PlanetHandle | null) => void;
   getAudio: () => number;
   planetRefs: React.MutableRefObject<Record<string, PlanetHandle | null>>;
 }) {
   const { size } = useThree();
-  // shrink the orbits on narrow viewports so the whole system fits
   const scale = size.width < 640 ? 0.55 : size.width < 1024 ? 0.78 : 1;
 
   return (
@@ -104,9 +134,10 @@ function ResponsivePlanets({
           key={p.key}
           ref={setRef(p.key)}
           data={p}
-          paused={!!activeKey}
+          paused={false}
           active={activeKey === p.key}
           scale={scale}
+          timeScale={timeScale}
           getAudioLevel={p.key === "acoustify" ? getAudio : undefined}
           onHover={() => {}}
           onClick={() => onSelectPlanet(p)}
@@ -137,7 +168,7 @@ function LiveCameraRig({
   defaultLookAt,
   computeTarget,
   locked,
-  distance = 3.2,
+  distance = 3.0,
 }: {
   defaultPosition: THREE.Vector3;
   defaultLookAt: THREE.Vector3;
@@ -163,11 +194,9 @@ function LiveCameraRig({
     const t = computeTarget();
     const controls = controlsRef.current;
     if (t) {
-      // place camera offset relative to current camera direction so user-rotated
-      // angle is preserved when locking onto the planet
       const dir = camera.position.clone().sub(t).normalize();
       desiredPos.current.copy(t).add(dir.multiplyScalar(distance));
-      desiredPos.current.y += 1.2;
+      desiredPos.current.y += 1.0;
       desiredTarget.current.copy(t);
       camera.position.lerp(desiredPos.current, 0.08);
       if (controls) {
@@ -188,8 +217,8 @@ function LiveCameraRig({
       enableRotate
       enableDamping
       dampingFactor={0.08}
-      minDistance={4}
-      maxDistance={60}
+      minDistance={2}
+      maxDistance={120}
       makeDefault
     />
   );
