@@ -1,5 +1,19 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, ExternalLink, Instagram, Send, Linkedin, Globe, Music, Pause, Play, Upload } from "lucide-react";
+import { X, Sparkles, ExternalLink, Send, Globe, Music, Pause, Play, Upload } from "lucide-react";
+
+const InstagramIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="5" />
+    <circle cx="12" cy="12" r="4" />
+    <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" />
+  </svg>
+);
+const LinkedinIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="3" />
+    <path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 13v4" />
+  </svg>
+);
 import { useEffect, useRef, useState } from "react";
 import type { PlanetData, PlanetLink } from "@/lib/portfolio-data";
 import { audioReactive, playClick } from "@/lib/audio-reactive";
@@ -21,9 +35,9 @@ const item = {
 
 function LinkIcon({ kind }: { kind: PlanetLink["kind"] }) {
   const cls = "size-4";
-  if (kind === "instagram") return <Instagram className={cls} />;
+  if (kind === "instagram") return <InstagramIcon className={cls} />;
   if (kind === "telegram") return <Send className={cls} />;
-  if (kind === "linkedin") return <Linkedin className={cls} />;
+  if (kind === "linkedin") return <LinkedinIcon className={cls} />;
   if (kind === "site") return <Globe className={cls} />;
   return <ExternalLink className={cls} />;
 }
@@ -32,7 +46,10 @@ function AcoustifyAudioPanel({ color }: { color: string }) {
   const [state, setState] = useState({ playing: false, trackName: null as string | null });
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => audioReactive.subscribe(setState), []);
+  useEffect(() => {
+    const unsub = audioReactive.subscribe(setState);
+    return () => { unsub(); };
+  }, []);
 
   return (
     <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.04] p-3">
