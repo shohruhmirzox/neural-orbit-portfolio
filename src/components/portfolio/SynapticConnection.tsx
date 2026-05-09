@@ -76,17 +76,20 @@ export function SynapticConnection({
 
   return (
     <group>
-      {/* @ts-expect-error - drei/r3f line element */}
-      <line ref={lineRef} geometry={geometry}>
-        <lineBasicMaterial
-          color={color}
-          transparent
-          opacity={0.35}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
-      {/* @ts-expect-error */}
-      </line>
+      <primitive
+        object={(() => {
+          const mat = new THREE.LineBasicMaterial({
+            color,
+            transparent: true,
+            opacity: 0.4,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+          });
+          const line = new THREE.Line(geometry, mat);
+          return line;
+        })()}
+        ref={lineRef as unknown as React.Ref<THREE.Object3D>}
+      />
       {Array.from({ length: pulseCount }).map((_, i) => (
         <mesh
           key={i}
