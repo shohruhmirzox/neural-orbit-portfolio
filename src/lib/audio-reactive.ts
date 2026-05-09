@@ -79,7 +79,7 @@ class AudioReactiveEngine {
       this.smoothed *= 0.92;
       return this.smoothed;
     }
-    this.analyser.getByteFrequencyData(this.data);
+    this.analyser.getByteFrequencyData(this.data as unknown as Uint8Array<ArrayBuffer>);
     // weight low frequencies more
     let sum = 0;
     let weight = 0;
