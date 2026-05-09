@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Brain, GraduationCap } from "lucide-react";
+import { Brain, GraduationCap, Volume2, VolumeX } from "lucide-react";
 import { NeuralScene } from "@/components/portfolio/NeuralScene";
 import { PlanetCard } from "@/components/portfolio/PlanetCard";
 import { NeuralLoader } from "@/components/portfolio/NeuralLoader";
 import { PLANETS, type PlanetData, type PlanetKey } from "@/lib/portfolio-data";
+import { playClick, playWhoosh, toggleAmbient } from "@/lib/audio-reactive";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -30,11 +31,18 @@ function Index() {
   const [loading, setLoading] = useState(true);
   const [activeKey, setActiveKey] = useState<PlanetKey | null>(null);
   const [hoverNucleus, setHoverNucleus] = useState(false);
+  const [ambientOn, setAmbientOn] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1900);
     return () => clearTimeout(t);
   }, []);
+
+  const handleSelect = (p: PlanetData | null) => {
+    playClick();
+    if (p && p.key !== activeKey) playWhoosh();
+    setActiveKey(p ? p.key : null);
+  };
 
   const activePlanet: PlanetData | null =
     PLANETS.find((p) => p.key === activeKey) ?? null;
