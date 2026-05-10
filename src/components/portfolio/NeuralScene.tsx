@@ -118,6 +118,7 @@ function SceneBackground({ texture }: { texture: THREE.Texture }) {
 function ResponsivePlanets({
   activeKey,
   timeScale,
+  reducedMotion = false,
   onSelectPlanet,
   setRef,
   getAudio,
@@ -125,6 +126,7 @@ function ResponsivePlanets({
 }: {
   activeKey: PlanetKey | null;
   timeScale: number;
+  reducedMotion?: boolean;
   onSelectPlanet: (p: PlanetData | null) => void;
   setRef: (key: string) => (h: PlanetHandle | null) => void;
   getAudio: () => number;
@@ -162,6 +164,7 @@ function ResponsivePlanets({
             pulseColor={p.emissive}
             pulseSpeed={0.35 + p.orbitSpeed}
             pulseCount={3}
+            reducedMotion={reducedMotion}
           />
         );
       })}
