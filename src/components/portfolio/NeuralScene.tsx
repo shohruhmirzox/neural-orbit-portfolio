@@ -100,6 +100,7 @@ export function NeuralScene({ activeKey, timeScale, reducedMotion = false, onSel
         defaultLookAt={NUCLEUS}
         computeTarget={computeTarget}
         locked={!!activeKey}
+        reducedMotion={reducedMotion}
       />
     </Canvas>
   );
