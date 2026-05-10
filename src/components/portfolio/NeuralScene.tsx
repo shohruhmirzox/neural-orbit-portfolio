@@ -21,7 +21,7 @@ interface Props {
 const NUCLEUS = new THREE.Vector3(0, 0, 0);
 const DEFAULT_POS = new THREE.Vector3(0, 8, 22);
 
-export function NeuralScene({ activeKey, timeScale, onSelectPlanet, onHoverNucleus }: Props) {
+export function NeuralScene({ activeKey, timeScale, reducedMotion = false, onSelectPlanet, onHoverNucleus }: Props) {
   const planetRefs = useRef<Record<string, PlanetHandle | null>>({});
   const [, force] = useState(0);
 
