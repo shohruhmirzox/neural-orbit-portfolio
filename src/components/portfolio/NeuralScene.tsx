@@ -87,6 +87,7 @@ export function NeuralScene({ activeKey, timeScale, reducedMotion = false, onSel
         <ResponsivePlanets
           activeKey={activeKey}
           timeScale={timeScale}
+          reducedMotion={reducedMotion}
           onSelectPlanet={onSelectPlanet}
           setRef={setRef}
           getAudio={getAudio}
