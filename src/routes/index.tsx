@@ -247,6 +247,7 @@ function Index() {
         <NeuralScene
           activeKey={activeKey}
           timeScale={timeScale}
+          reducedMotion={reducedMotion}
           onSelectPlanet={handleSelect}
           onHoverNucleus={setHoverNucleus}
         />
