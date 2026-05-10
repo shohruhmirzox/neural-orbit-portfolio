@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Brain, GraduationCap, Volume2, VolumeX, Gauge, Telescope } from "lucide-react";
+import { Brain, GraduationCap, Volume2, VolumeX, Gauge, Telescope, Accessibility } from "lucide-react";
 import { NeuralScene } from "@/components/portfolio/NeuralScene";
 import { PlanetCard } from "@/components/portfolio/PlanetCard";
 import { NeuralLoader } from "@/components/portfolio/NeuralLoader";
