@@ -179,12 +179,14 @@ function LiveCameraRig({
   computeTarget,
   locked,
   distance = 3.0,
+  reducedMotion = false,
 }: {
   defaultPosition: THREE.Vector3;
   defaultLookAt: THREE.Vector3;
   computeTarget: () => THREE.Vector3 | null;
   locked: boolean;
   distance?: number;
+  reducedMotion?: boolean;
 }) {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
@@ -203,18 +205,22 @@ function LiveCameraRig({
   useFrame(() => {
     const t = computeTarget();
     const controls = controlsRef.current;
+    // In reduced-motion mode, snap instantly instead of lerping the camera.
+    const posLerp = reducedMotion ? 1 : 0.08;
+    const tgtLerp = reducedMotion ? 1 : 0.12;
+    const idleLerp = reducedMotion ? 1 : 0.05;
     if (t) {
       const dir = camera.position.clone().sub(t).normalize();
       desiredPos.current.copy(t).add(dir.multiplyScalar(distance));
       desiredPos.current.y += 1.0;
       desiredTarget.current.copy(t);
-      camera.position.lerp(desiredPos.current, 0.08);
+      camera.position.lerp(desiredPos.current, posLerp);
       if (controls) {
-        controls.target.lerp(desiredTarget.current, 0.12);
+        controls.target.lerp(desiredTarget.current, tgtLerp);
         controls.update();
       }
     } else if (controls) {
-      controls.target.lerp(defaultLookAt, 0.05);
+      controls.target.lerp(defaultLookAt, idleLerp);
       controls.update();
     }
   });
