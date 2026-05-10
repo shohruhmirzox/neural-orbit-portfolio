@@ -13,6 +13,7 @@ import { makeNebulaSkybox, makeFlareTexture } from "@/lib/planet-textures";
 interface Props {
   activeKey: PlanetKey | null;
   timeScale: number;
+  reducedMotion?: boolean;
   onSelectPlanet: (p: PlanetData | null) => void;
   onHoverNucleus: (h: boolean) => void;
 }
