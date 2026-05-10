@@ -99,6 +99,23 @@ function Index() {
             {ambientOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
             <span className="hidden sm:inline">{ambientOn ? "Ambient on" : "Ambient off"}</span>
           </motion.button>
+          <motion.button
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.18, duration: 0.6 }}
+            onClick={() => { playClick(); setReducedMotion((v) => !v); }}
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs backdrop-blur transition ${
+              reducedMotion
+                ? "border-white/30 bg-white/10 text-foreground"
+                : "border-white/10 bg-white/[0.04] text-muted-foreground hover:text-foreground"
+            }`}
+            aria-pressed={reducedMotion}
+            aria-label="Toggle reduced motion"
+            title="Reduced motion: disables meteors, synaptic pulses, and camera fly animations"
+          >
+            <Accessibility size={14} />
+            <span className="hidden sm:inline">{reducedMotion ? "Reduced motion" : "Full motion"}</span>
+          </motion.button>
         </div>
       </header>
 
