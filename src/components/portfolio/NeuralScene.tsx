@@ -61,8 +61,12 @@ export function NeuralScene({ activeKey, timeScale, reducedMotion = false, onSel
         <NeuralStarfield count={1400} />
 
         {/* anime-style meteor sparkles drifting through the scene */}
-        <Sparkles count={120} scale={[80, 40, 80]} size={3} speed={0.6} color="#c4b5fd" opacity={0.8} />
-        <Sparkles count={50} scale={[60, 30, 60]} size={2} speed={1.2} color="#7dd3fc" opacity={0.7} />
+        {!reducedMotion && (
+          <>
+            <Sparkles count={120} scale={[80, 40, 80]} size={3} speed={0.6} color="#c4b5fd" opacity={0.8} />
+            <Sparkles count={50} scale={[60, 30, 60]} size={2} speed={1.2} color="#7dd3fc" opacity={0.7} />
+          </>
+        )}
 
         <NeuralNucleus
           onHover={onHoverNucleus}
