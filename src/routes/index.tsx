@@ -34,8 +34,13 @@ function Index() {
   const [hoverNucleus, setHoverNucleus] = useState(false);
   const [ambientOn, setAmbientOn] = useState(false);
   const [timeScale, setTimeScale] = useState(1);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia) {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      setReducedMotion(mq.matches);
+    }
     const t = setTimeout(() => setLoading(false), 1900);
     return () => clearTimeout(t);
   }, []);
