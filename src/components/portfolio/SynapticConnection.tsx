@@ -89,7 +89,7 @@ export function SynapticConnection({
   return (
     <group>
       <primitive object={lineObject} ref={lineRef as unknown as React.Ref<THREE.Object3D>} />
-      {Array.from({ length: pulseCount }).map((_, i) => (
+      {Array.from({ length: effectivePulseCount }).map((_, i) => (
         <mesh
           key={i}
           ref={(m) => {
