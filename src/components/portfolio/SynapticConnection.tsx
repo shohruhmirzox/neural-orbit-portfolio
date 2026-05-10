@@ -9,6 +9,7 @@ interface Props {
   pulseColor?: string;
   pulseSpeed?: number;
   pulseCount?: number;
+  reducedMotion?: boolean;
 }
 
 export function SynapticConnection({
@@ -18,7 +19,9 @@ export function SynapticConnection({
   pulseColor,
   pulseSpeed = 0.35,
   pulseCount = 3,
+  reducedMotion = false,
 }: Props) {
+  const effectivePulseCount = reducedMotion ? 0 : pulseCount;
   const lineRef = useRef<THREE.Line>(null!);
   const pulseRefs = useRef<THREE.Mesh[]>([]);
   const tmp = useRef(new THREE.Vector3());
@@ -86,7 +89,7 @@ export function SynapticConnection({
   return (
     <group>
       <primitive object={lineObject} ref={lineRef as unknown as React.Ref<THREE.Object3D>} />
-      {Array.from({ length: pulseCount }).map((_, i) => (
+      {Array.from({ length: effectivePulseCount }).map((_, i) => (
         <mesh
           key={i}
           ref={(m) => {

@@ -13,6 +13,7 @@ import { makeNebulaSkybox, makeFlareTexture } from "@/lib/planet-textures";
 interface Props {
   activeKey: PlanetKey | null;
   timeScale: number;
+  reducedMotion?: boolean;
   onSelectPlanet: (p: PlanetData | null) => void;
   onHoverNucleus: (h: boolean) => void;
 }
@@ -20,7 +21,7 @@ interface Props {
 const NUCLEUS = new THREE.Vector3(0, 0, 0);
 const DEFAULT_POS = new THREE.Vector3(0, 8, 22);
 
-export function NeuralScene({ activeKey, timeScale, onSelectPlanet, onHoverNucleus }: Props) {
+export function NeuralScene({ activeKey, timeScale, reducedMotion = false, onSelectPlanet, onHoverNucleus }: Props) {
   const planetRefs = useRef<Record<string, PlanetHandle | null>>({});
   const [, force] = useState(0);
 
@@ -60,8 +61,12 @@ export function NeuralScene({ activeKey, timeScale, onSelectPlanet, onHoverNucle
         <NeuralStarfield count={1400} />
 
         {/* anime-style meteor sparkles drifting through the scene */}
-        <Sparkles count={120} scale={[80, 40, 80]} size={3} speed={0.6} color="#c4b5fd" opacity={0.8} />
-        <Sparkles count={50} scale={[60, 30, 60]} size={2} speed={1.2} color="#7dd3fc" opacity={0.7} />
+        {!reducedMotion && (
+          <>
+            <Sparkles count={120} scale={[80, 40, 80]} size={3} speed={0.6} color="#c4b5fd" opacity={0.8} />
+            <Sparkles count={50} scale={[60, 30, 60]} size={2} speed={1.2} color="#7dd3fc" opacity={0.7} />
+          </>
+        )}
 
         <NeuralNucleus
           onHover={onHoverNucleus}
@@ -82,6 +87,7 @@ export function NeuralScene({ activeKey, timeScale, onSelectPlanet, onHoverNucle
         <ResponsivePlanets
           activeKey={activeKey}
           timeScale={timeScale}
+          reducedMotion={reducedMotion}
           onSelectPlanet={onSelectPlanet}
           setRef={setRef}
           getAudio={getAudio}
@@ -94,6 +100,7 @@ export function NeuralScene({ activeKey, timeScale, onSelectPlanet, onHoverNucle
         defaultLookAt={NUCLEUS}
         computeTarget={computeTarget}
         locked={!!activeKey}
+        reducedMotion={reducedMotion}
       />
     </Canvas>
   );
@@ -112,6 +119,7 @@ function SceneBackground({ texture }: { texture: THREE.Texture }) {
 function ResponsivePlanets({
   activeKey,
   timeScale,
+  reducedMotion = false,
   onSelectPlanet,
   setRef,
   getAudio,
@@ -119,6 +127,7 @@ function ResponsivePlanets({
 }: {
   activeKey: PlanetKey | null;
   timeScale: number;
+  reducedMotion?: boolean;
   onSelectPlanet: (p: PlanetData | null) => void;
   setRef: (key: string) => (h: PlanetHandle | null) => void;
   getAudio: () => number;
@@ -156,6 +165,7 @@ function ResponsivePlanets({
             pulseColor={p.emissive}
             pulseSpeed={0.35 + p.orbitSpeed}
             pulseCount={3}
+            reducedMotion={reducedMotion}
           />
         );
       })}
@@ -169,12 +179,14 @@ function LiveCameraRig({
   computeTarget,
   locked,
   distance = 3.0,
+  reducedMotion = false,
 }: {
   defaultPosition: THREE.Vector3;
   defaultLookAt: THREE.Vector3;
   computeTarget: () => THREE.Vector3 | null;
   locked: boolean;
   distance?: number;
+  reducedMotion?: boolean;
 }) {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
@@ -193,18 +205,22 @@ function LiveCameraRig({
   useFrame(() => {
     const t = computeTarget();
     const controls = controlsRef.current;
+    // In reduced-motion mode, snap instantly instead of lerping the camera.
+    const posLerp = reducedMotion ? 1 : 0.08;
+    const tgtLerp = reducedMotion ? 1 : 0.12;
+    const idleLerp = reducedMotion ? 1 : 0.05;
     if (t) {
       const dir = camera.position.clone().sub(t).normalize();
       desiredPos.current.copy(t).add(dir.multiplyScalar(distance));
       desiredPos.current.y += 1.0;
       desiredTarget.current.copy(t);
-      camera.position.lerp(desiredPos.current, 0.08);
+      camera.position.lerp(desiredPos.current, posLerp);
       if (controls) {
-        controls.target.lerp(desiredTarget.current, 0.12);
+        controls.target.lerp(desiredTarget.current, tgtLerp);
         controls.update();
       }
     } else if (controls) {
-      controls.target.lerp(defaultLookAt, 0.05);
+      controls.target.lerp(defaultLookAt, idleLerp);
       controls.update();
     }
   });
