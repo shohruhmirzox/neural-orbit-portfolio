@@ -173,48 +173,132 @@ export function makeMoonTexture(): THREE.CanvasTexture {
 }
 
 export function makeNebulaSkybox(): THREE.Texture {
-  // single equirectangular nebula painted as background gradient + nebula clouds
-  const c = makeCanvas(2048, 1024);
+  // High-resolution (6K-class) equirectangular Makoto Shinkai-inspired nebula skybox.
+  // Cap at 6144 to respect common WebGL MAX_TEXTURE_SIZE (8192) with safety margin.
+  const maxTex = (() => {
+    try {
+      const gl = document.createElement("canvas").getContext("webgl2") || document.createElement("canvas").getContext("webgl");
+      // @ts-ignore
+      return gl ? (gl as WebGLRenderingContext).getParameter((gl as WebGLRenderingContext).MAX_TEXTURE_SIZE) as number : 4096;
+    } catch { return 4096; }
+  })();
+  const W = Math.min(6144, maxTex);
+  const H = W / 2;
+  const c = makeCanvas(W, H);
   const ctx = c.getContext("2d")!;
-  // base radial gradient deep indigo -> black
-  const bg = ctx.createLinearGradient(0, 0, 0, c.height);
-  bg.addColorStop(0, "#0a0420");
-  bg.addColorStop(0.5, "#150935");
-  bg.addColorStop(1, "#020210");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, c.width, c.height);
 
-  // nebula blobs
-  const blobs = [
-    { x: 0.18, y: 0.35, r: 380, c1: "rgba(140,80,255,0.55)", c2: "rgba(140,80,255,0)" },
-    { x: 0.55, y: 0.55, r: 520, c1: "rgba(60,150,255,0.45)", c2: "rgba(60,150,255,0)" },
-    { x: 0.82, y: 0.3, r: 300, c1: "rgba(255,90,180,0.45)", c2: "rgba(255,90,180,0)" },
-    { x: 0.4, y: 0.78, r: 420, c1: "rgba(80,200,220,0.35)", c2: "rgba(80,200,220,0)" },
-    { x: 0.7, y: 0.85, r: 260, c1: "rgba(200,120,255,0.4)", c2: "rgba(200,120,255,0)" },
-  ];
+  // 1. Deep base — vertical gradient from indigo void to twilight magenta
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0.0, "#04020f");
+  bg.addColorStop(0.25, "#0a0530");
+  bg.addColorStop(0.55, "#1a0a48");
+  bg.addColorStop(0.8, "#2a0f4a");
+  bg.addColorStop(1.0, "#070318");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // 2. Soft horizontal aurora bands (Shinkai-style atmospheric color wash)
   ctx.globalCompositeOperation = "screen";
-  for (const b of blobs) {
-    const g = ctx.createRadialGradient(b.x * c.width, b.y * c.height, 0, b.x * c.width, b.y * c.height, b.r);
-    g.addColorStop(0, b.c1);
-    g.addColorStop(1, b.c2);
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(b.x * c.width, b.y * c.height, b.r, 0, Math.PI * 2); ctx.fill();
+  for (let i = 0; i < 6; i++) {
+    const y = (i / 6) * H + Math.random() * 80;
+    const grad = ctx.createLinearGradient(0, y - 90, 0, y + 90);
+    const hue = ["rgba(120,70,255,0.18)", "rgba(255,90,200,0.14)", "rgba(80,180,255,0.16)"][i % 3];
+    grad.addColorStop(0, "rgba(0,0,0,0)");
+    grad.addColorStop(0.5, hue);
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, y - 90, W, 180);
   }
-  // bright stars
+
+  // 3. Large nebula blobs — deep purples, magentas, cyan accents
+  const blobs = [
+    { x: 0.12, y: 0.35, r: W * 0.22, c1: "rgba(150,80,255,0.65)" },
+    { x: 0.30, y: 0.62, r: W * 0.18, c1: "rgba(220,90,200,0.55)" },
+    { x: 0.55, y: 0.45, r: W * 0.26, c1: "rgba(80,120,255,0.55)" },
+    { x: 0.78, y: 0.30, r: W * 0.20, c1: "rgba(255,100,190,0.55)" },
+    { x: 0.88, y: 0.70, r: W * 0.22, c1: "rgba(120,80,255,0.55)" },
+    { x: 0.45, y: 0.85, r: W * 0.16, c1: "rgba(90,210,230,0.40)" },
+    { x: 0.65, y: 0.15, r: W * 0.14, c1: "rgba(180,120,255,0.50)" },
+  ];
+  for (const b of blobs) {
+    const cx = b.x * W, cy = b.y * H;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, b.r);
+    g.addColorStop(0, b.c1);
+    g.addColorStop(0.5, b.c1.replace(/,[\d.]+\)/, ",0.15)"));
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(cx, cy, b.r, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 4. Wispy nebula filaments using procedural noise blotches
+  for (let i = 0; i < 220; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const r = 30 + Math.random() * 140;
+    const palette = [
+      "rgba(180,120,255,0.10)",
+      "rgba(255,140,220,0.09)",
+      "rgba(120,180,255,0.09)",
+      "rgba(220,180,255,0.08)",
+    ];
+    const col = palette[i % palette.length];
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, col);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 5. Star clusters — dense Milky Way style band
   ctx.globalCompositeOperation = "lighter";
-  for (let i = 0; i < 1400; i++) {
-    const x = Math.random() * c.width;
-    const y = Math.random() * c.height;
-    const r = Math.random() < 0.97 ? Math.random() * 1.1 : 1.5 + Math.random() * 2.2;
-    const a = 0.4 + Math.random() * 0.6;
+  const bandY = H * 0.5;
+  for (let i = 0; i < 800; i++) {
+    const x = Math.random() * W;
+    const dy = (Math.random() - 0.5) * H * 0.18;
+    const y = bandY + dy + Math.sin(x / W * Math.PI * 2) * 40;
+    const r = 0.4 + Math.random() * 1.0;
+    ctx.fillStyle = `rgba(255,240,220,${0.3 + Math.random() * 0.4})`;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 6. Stylized stars with cross/halo (anime sparkle)
+  const starCount = Math.floor(W * 1.8);
+  for (let i = 0; i < starCount; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const r = Math.random() * 0.9;
+    const a = 0.35 + Math.random() * 0.55;
     ctx.fillStyle = `rgba(255,255,255,${a})`;
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 7. Bright hero stars with glow + 4-point cross flare (Shinkai signature)
+  const heroCount = 90;
+  for (let i = 0; i < heroCount; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const tint = ["255,240,220", "200,220,255", "255,200,230", "220,200,255"][i % 4];
+    const halo = ctx.createRadialGradient(x, y, 0, x, y, 18);
+    halo.addColorStop(0, `rgba(${tint},1)`);
+    halo.addColorStop(0.2, `rgba(${tint},0.6)`);
+    halo.addColorStop(1, `rgba(${tint},0)`);
+    ctx.fillStyle = halo;
+    ctx.beginPath(); ctx.arc(x, y, 18, 0, Math.PI * 2); ctx.fill();
+    // cross flare
+    ctx.strokeStyle = `rgba(${tint},0.55)`;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(x - 22, y); ctx.lineTo(x + 22, y);
+    ctx.moveTo(x, y - 22); ctx.lineTo(x, y + 22);
+    ctx.stroke();
   }
   ctx.globalCompositeOperation = "source-over";
 
   const tex = new THREE.CanvasTexture(c);
   tex.mapping = THREE.EquirectangularReflectionMapping;
   tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  tex.needsUpdate = true;
   return tex;
 }
 
