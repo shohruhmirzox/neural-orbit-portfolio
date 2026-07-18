@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SITE, SOCIALS } from "@/lib/site-data";
+import { MEDIA } from "@/lib/media-config";
 import { AmbientVideo } from "./AmbientVideo";
 
 function GalleryBackdrop() {
@@ -65,7 +66,7 @@ export function FinaleSection() {
     >
       <GalleryBackdrop />
       <div className="absolute inset-0">
-        <AmbientVideo src="/media/closer.mp4" />
+        <AmbientVideo src="/media/closer.mp4" remoteSrc={MEDIA.CLOSER_URL} />
       </div>
       <div className="vignette pointer-events-none absolute inset-0" />
 

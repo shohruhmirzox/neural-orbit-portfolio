@@ -128,6 +128,92 @@ export class SequenceOrbit implements OrbitEngine {
 }
 
 /* ------------------------------------------------------------------ */
+/* Remote video scrubber                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Scrubs a remote MP4 (Higgsfield CDN) by seeking currentTime with scroll.
+ * The clip is small (~8s) and fully buffered before scrubbing starts, so
+ * seeks stay responsive. The video element is drawn behind the canvas via
+ * absolute positioning by the caller; here we only manage seeking.
+ */
+export class VideoScrubOrbit implements OrbitEngine {
+  private video: HTMLVideoElement;
+  private target = 0;
+  private current = 0;
+  private raf = 0;
+  private disposed = false;
+  private ready = false;
+
+  constructor(
+    container: HTMLElement,
+    src: string,
+    handlers?: { onReady?: () => void; onError?: () => void },
+  ) {
+    const v = document.createElement("video");
+    v.src = src;
+    v.muted = true;
+    v.playsInline = true;
+    v.preload = "auto";
+    v.crossOrigin = "anonymous";
+    v.style.cssText =
+      "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.9s ease;";
+    container.prepend(v);
+    this.video = v;
+    const markReady = () => {
+      if (this.ready || this.disposed) return;
+      this.ready = true;
+      try {
+        v.currentTime = 0.01;
+      } catch {
+        /* not seekable yet */
+      }
+      v.style.opacity = "1";
+      handlers?.onReady?.();
+    };
+    v.addEventListener("canplaythrough", markReady, { once: true });
+    v.addEventListener("loadeddata", () => {
+      // Nudge buffering along; some browsers only buffer on play
+      v.play()
+        .then(() => v.pause())
+        .catch(() => {});
+      setTimeout(markReady, 2500);
+    });
+    v.addEventListener("error", () => handlers?.onError?.(), { once: true });
+    v.load();
+    this.loop();
+  }
+
+  setProgress(p: number) {
+    this.target = Math.max(0, Math.min(1, p));
+  }
+
+  setPointer() {}
+  resize() {}
+
+  private loop = () => {
+    if (this.disposed) return;
+    this.raf = requestAnimationFrame(this.loop);
+    if (!this.ready || !this.video.duration) return;
+    this.current += (this.target - this.current) * 0.18;
+    const t = this.current * Math.max(0.01, this.video.duration - 0.05);
+    if (Math.abs(this.video.currentTime - t) > 0.02) {
+      try {
+        this.video.currentTime = t;
+      } catch {
+        /* seek raced a src change; next frame retries */
+      }
+    }
+  };
+
+  dispose() {
+    this.disposed = true;
+    cancelAnimationFrame(this.raf);
+    this.video.remove();
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Particle portrait                                                   */
 /* ------------------------------------------------------------------ */
 
