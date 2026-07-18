@@ -9,7 +9,7 @@
  */
 export const MEDIA = {
   HERO_ORBIT_URL:
-    "https://d8j0ntlcm91z4.cloudfront.net/user_3G2CGCIgACIHPlqTOlAXOfInWfj/hf_20260718_183931_dda892ca-9d10-4ae9-a104-5281552948e7.mp4",
+    "https://d8j0ntlcm91z4.cloudfront.net/user_3G2CGCIgACIHPlqTOlAXOfInWfj/hf_20260718_215318_358869d5-5de1-4a9b-bb38-2fc43e2c7239.mp4",
   BUILDER_URL:
     "https://d8j0ntlcm91z4.cloudfront.net/user_3G2CGCIgACIHPlqTOlAXOfInWfj/hf_20260718_183942_db8798cb-b6c1-444e-83fb-116e1cfeac1a.mp4",
   CLOSER_URL:
