@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { PILLARS } from "@/lib/site-data";
+import { MEDIA } from "@/lib/media-config";
 import { AmbientVideo } from "./AmbientVideo";
 
 const HOLO_SCREENS = [
@@ -126,7 +127,7 @@ export function PillarsSection() {
       {/* Backdrop: generated clip when present, holographic set until then */}
       <HoloBackdrop />
       <div className="absolute inset-0">
-        <AmbientVideo src="/media/builder.mp4" />
+        <AmbientVideo src="/media/builder.mp4" remoteSrc={MEDIA.BUILDER_URL} />
       </div>
       <div className="vignette pointer-events-none absolute inset-0" />
 

@@ -2,7 +2,14 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SITE } from "@/lib/site-data";
-import { loadManifest, ParticleOrbit, SequenceOrbit, type OrbitEngine } from "./hero-orbit";
+import { MEDIA } from "@/lib/media-config";
+import {
+  loadManifest,
+  ParticleOrbit,
+  SequenceOrbit,
+  VideoScrubOrbit,
+  type OrbitEngine,
+} from "./hero-orbit";
 
 function Line({ text, className }: { text: string; className?: string }) {
   return (
@@ -37,14 +44,34 @@ export function HeroSection() {
 
     let engine: OrbitEngine | null = null;
     let cancelled = false;
+    const engines: OrbitEngine[] = [];
 
     const boot = async () => {
       const manifest = await loadManifest("/sequences/hero/manifest.json");
       if (cancelled) return;
-      engine =
-        manifest !== null
-          ? new SequenceOrbit(canvas, manifest)
-          : new ParticleOrbit(canvas, "/media/portrait.png");
+      if (manifest !== null) {
+        engine = new SequenceOrbit(canvas, manifest);
+        engines.push(engine);
+      } else {
+        // Particles render immediately; the generated orbit clip takes over
+        // once buffered. If the CDN fails, particles simply stay.
+        const particle = new ParticleOrbit(canvas, "/media/portrait.png");
+        engines.push(particle);
+        engine = particle;
+        if (MEDIA.HERO_ORBIT_URL) {
+          const scrub: VideoScrubOrbit = new VideoScrubOrbit(section, MEDIA.HERO_ORBIT_URL, {
+            onReady: () => {
+              if (cancelled) return;
+              engine = scrub;
+              canvas.style.transition = "opacity 0.9s ease";
+              canvas.style.opacity = "0";
+              setTimeout(() => particle.dispose(), 1000);
+            },
+            onError: () => scrub.dispose(),
+          });
+          engines.push(scrub);
+        }
+      }
       engine.resize();
       if (reduced) engine.setProgress(0.12);
     };
@@ -126,7 +153,7 @@ export function HeroSection() {
       ctx.revert();
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pointermove", onPointer);
-      engine?.dispose();
+      engines.forEach((e) => e.dispose());
     };
   }, []);
 
