@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { PILLARS } from "@/lib/site-data";
 import { MEDIA } from "@/lib/media-config";
 import { AmbientVideo } from "./AmbientVideo";
+import { ClipFrame } from "./ClipFrame";
 
 const HOLO_SCREENS = [
   { top: "12%", left: "6%", w: 190, h: 120, delay: 0, speed: -18 },
@@ -126,15 +127,26 @@ export function PillarsSection() {
     >
       {/* Backdrop: generated clip when present, holographic set until then */}
       <HoloBackdrop />
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 opacity-60">
         <AmbientVideo src="/media/builder.mp4" remoteSrc={MEDIA.BUILDER_URL} />
       </div>
-      <div className="vignette pointer-events-none absolute inset-0" />
+      {/* Lighter readability scrim (left→right) instead of a full dark vignette */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink/85 via-ink/45 to-transparent" />
 
       <div className="absolute left-5 top-20 z-10 md:left-10 md:top-24">
         <p className="font-body text-[10px] uppercase tracking-[0.34em] text-emerald">
           Three pillars
         </p>
+      </div>
+
+      {/* Always-visible framed clip so the footage is unmistakable */}
+      <div className="pointer-events-none absolute bottom-6 right-4 z-20 w-[46vw] max-w-[420px] md:bottom-10 md:right-10 md:w-[34vw]">
+        <ClipFrame
+          src="/media/builder.mp4"
+          remoteSrc={MEDIA.BUILDER_URL}
+          reel="Reel 02 · Live"
+          title="The Builder"
+        />
       </div>
 
       {PILLARS.map((p) => (
