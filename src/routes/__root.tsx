@@ -8,6 +8,11 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
+import "@fontsource/anton";
+import "@fontsource/space-grotesk/400.css";
+import "@fontsource/space-grotesk/500.css";
+import "@fontsource/space-grotesk/600.css";
+import "@fontsource/instrument-serif/400-italic.css";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -72,18 +77,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Runa.AI" },
-      { name: "description", content: "A futuristic 3D portfolio showcasing professional achievements as a \"Neural Solar System.\"" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Runa.AI" },
-      { property: "og:description", content: "A futuristic 3D portfolio showcasing professional achievements as a \"Neural Solar System.\"" },
+      { title: "Shohruhmirzo Khudaykulov" },
+      {
+        name: "description",
+        content:
+          "Cinematic portfolio of Shohruhmirzo Khudaykulov — Lester B. Pearson Scholar, University of Toronto '30, neurotech entrepreneur and storyteller.",
+      },
+      { name: "author", content: "Shohruhmirzo Khudaykulov" },
+      { name: "theme-color", content: "#050605" },
+      { property: "og:title", content: "Shohruhmirzo Khudaykulov" },
+      {
+        property: "og:description",
+        content: "Neuroscience × AI × Ventures. One scroll, one orbit.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Runa.AI" },
-      { name: "twitter:description", content: "A futuristic 3D portfolio showcasing professional achievements as a \"Neural Solar System.\"" },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Kxh1jdmpizOO2fTL39GDCqd9A982/social-images/social-1778346981150-image_2026-05-06_16-32-39.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Kxh1jdmpizOO2fTL39GDCqd9A982/social-images/social-1778346981150-image_2026-05-06_16-32-39.webp" },
+      { name: "twitter:title", content: "Shohruhmirzo Khudaykulov" },
+      {
+        name: "twitter:description",
+        content: "Neuroscience × AI × Ventures. One scroll, one orbit.",
+      },
     ],
     links: [
       {
