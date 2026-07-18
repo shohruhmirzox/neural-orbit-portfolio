@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SITE, SOCIALS } from "@/lib/site-data";
 import { MEDIA } from "@/lib/media-config";
 import { AmbientVideo } from "./AmbientVideo";
+import { ClipFrame } from "./ClipFrame";
 
 function GalleryBackdrop() {
   return (
@@ -65,10 +66,10 @@ export function FinaleSection() {
       className="relative overflow-hidden bg-ink-soft pt-28 md:pt-40"
     >
       <GalleryBackdrop />
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 opacity-55">
         <AmbientVideo src="/media/closer.mp4" remoteSrc={MEDIA.CLOSER_URL} />
       </div>
-      <div className="vignette pointer-events-none absolute inset-0" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/40 to-ink/85" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10">
         <h2 className="display-huge text-[15vw] text-cream md:text-[10rem]">
@@ -102,8 +103,18 @@ export function FinaleSection() {
           </a>
         </div>
 
+        {/* Visible clip so the closer footage is unmistakable */}
+        <div className="mt-16 w-full max-w-2xl md:mt-20">
+          <ClipFrame
+            src="/media/closer.mp4"
+            remoteSrc={MEDIA.CLOSER_URL}
+            reel="Reel 03 · Live"
+            title="The Closer"
+          />
+        </div>
+
         {/* Footer */}
-        <footer className="mt-24 border-t border-cream/10 pb-10 pt-10 md:mt-32">
+        <footer className="mt-20 border-t border-cream/10 pb-10 pt-10 md:mt-28">
           <div className="grid gap-10 md:grid-cols-[1.2fr_2fr]">
             <div>
               <p className="font-display text-2xl uppercase text-cream">{SITE.name}</p>

@@ -38,6 +38,7 @@ export function AmbientVideo({
       playsInline
       autoPlay
       preload="metadata"
+      onLoadedData={() => setOk(true)}
       onCanPlay={() => setOk(true)}
       onError={onError}
       style={{ filter: `brightness(${brightness}) saturate(1.1)` }}
