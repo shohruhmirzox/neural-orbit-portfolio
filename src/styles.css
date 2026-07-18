@@ -23,83 +23,194 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
-  --color-neuro: var(--neuro);
-  --color-synapse: var(--synapse);
-  --color-bio: var(--bio);
-  --color-gold: var(--gold);
-  --color-violet-glow: var(--violet-glow);
-  --color-chrome: var(--chrome);
-  --font-display: "Space Grotesk", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-ink: var(--ink);
+  --color-emerald: var(--emerald);
+  --color-cream: var(--cream);
+  --font-display: "Anton", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Space Grotesk", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
 }
 
 :root {
-  --radius: 0.75rem;
-  --background: oklch(0.12 0.06 270);
-  --foreground: oklch(0.97 0.02 250);
-  --card: oklch(0.18 0.06 270 / 0.5);
-  --card-foreground: oklch(0.97 0.02 250);
-  --primary: oklch(0.78 0.18 280);
-  --primary-foreground: oklch(0.12 0.06 270);
-  --secondary: oklch(0.25 0.08 270);
-  --secondary-foreground: oklch(0.97 0.02 250);
-  --muted: oklch(0.25 0.05 270);
-  --muted-foreground: oklch(0.72 0.05 270);
-  --accent: oklch(0.78 0.18 200);
-  --accent-foreground: oklch(0.12 0.06 270);
-  --border: oklch(0.85 0.15 280 / 0.2);
-  --ring: oklch(0.78 0.18 280);
+  --radius: 0.25rem;
 
-  --neuro: oklch(0.78 0.22 290);
-  --synapse: oklch(0.85 0.2 200);
-  --bio: oklch(0.82 0.22 160);
-  --gold: oklch(0.85 0.18 80);
-  --violet-glow: oklch(0.7 0.28 300);
-  --chrome: oklch(0.88 0.02 250);
+  --ink: #050605;
+  --ink-soft: #0a0d0b;
+  --emerald: #17e388;
+  --emerald-deep: #0a6b42;
+  --cream: #f2efe4;
+  --cream-dim: #b8b5a6;
+
+  --background: var(--ink);
+  --foreground: var(--cream);
+  --card: #0b0e0c;
+  --card-foreground: var(--cream);
+  --primary: var(--emerald);
+  --primary-foreground: var(--ink);
+  --secondary: #101512;
+  --secondary-foreground: var(--cream);
+  --muted: #121613;
+  --muted-foreground: var(--cream-dim);
+  --accent: var(--emerald);
+  --accent-foreground: var(--ink);
+  --border: rgba(242, 239, 228, 0.12);
+  --ring: var(--emerald);
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body, #root { height: 100%; }
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    scroll-behavior: initial;
+  }
+  html,
   body {
-    background: radial-gradient(ellipse at top, #1e1b4b 0%, #020617 70%);
-    color: var(--color-foreground);
-    font-family: var(--font-display);
-    overflow: hidden;
+    background: var(--ink);
+    color: var(--cream);
     margin: 0;
+    min-height: 100%;
+  }
+  body {
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--emerald);
+    color: var(--ink);
+  }
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
   }
 }
 
 @layer utilities {
-  .glass {
-    background: linear-gradient(135deg, oklch(0.2 0.08 280 / 0.55), oklch(0.15 0.06 270 / 0.35));
-    backdrop-filter: blur(25px) saturate(180%);
-    -webkit-backdrop-filter: blur(25px) saturate(180%);
-    border: 1px solid oklch(0.85 0.15 280 / 0.18);
-    box-shadow: 0 20px 60px -20px oklch(0.5 0.25 290 / 0.5),
-                inset 0 1px 0 0 oklch(1 0 0 / 0.08);
+  .font-display {
+    font-family: var(--font-display);
   }
-  .text-glow {
-    text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+  .font-serif-accent {
+    font-family: var(--font-serif);
   }
-  .neuro-pulse {
-    animation: neuro-pulse 2.4s ease-in-out infinite;
+
+  /* Massive condensed display setting */
+  .display-huge {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    line-height: 0.86;
+    letter-spacing: -0.01em;
+    font-weight: 400;
+  }
+
+  .text-outline {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(242, 239, 228, 0.35);
+  }
+  .text-outline-emerald {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(23, 227, 136, 0.6);
+  }
+
+  .emerald-glow {
+    text-shadow:
+      0 0 24px rgba(23, 227, 136, 0.55),
+      0 0 80px rgba(23, 227, 136, 0.25);
+  }
+
+  /* Film grain — animated noise, sits above everything */
+  .grain {
+    position: fixed;
+    inset: -200%;
+    z-index: 100;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+    opacity: 0.05;
+    animation: grain-shift 0.6s steps(4) infinite;
+  }
+  @keyframes grain-shift {
+    0% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(-1.5%, 1%);
+    }
+    50% {
+      transform: translate(1%, -1.5%);
+    }
+    75% {
+      transform: translate(-1%, -1%);
+    }
+    100% {
+      transform: translate(1.5%, 1.5%);
+    }
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 36s linear infinite;
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .vignette {
+    background: radial-gradient(
+      ellipse at center,
+      transparent 45%,
+      rgba(0, 0, 0, 0.55) 100%
+    );
+  }
+
+  .scanline {
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(0, 0, 0, 0.18) 4px
+    );
+  }
+
+  .link-underline {
+    position: relative;
+  }
+  .link-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    height: 1px;
+    width: 100%;
+    background: var(--emerald);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .link-underline:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
   }
 }
 
-@keyframes neuro-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 8px var(--neuro)); }
-  50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 28px var(--neuro)); }
-}
-
-@keyframes brain-scan {
-  0% { stroke-dashoffset: 600; opacity: 0.3; }
-  50% { opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0.3; }
-}
-.brain-scan path { stroke-dasharray: 600; animation: brain-scan 2.4s ease-in-out infinite; }
-
-@keyframes float-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .grain,
+  .marquee-track {
+    animation: none;
+  }
 }
