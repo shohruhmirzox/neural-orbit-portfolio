@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { Preloader } from "@/components/cinematic/Preloader";
-import { Header } from "@/components/cinematic/Header";
+import { Header, ScrollProgress } from "@/components/cinematic/Header";
 import { HeroSection } from "@/components/cinematic/HeroSection";
 import { StatsStrip } from "@/components/cinematic/StatsStrip";
 import { PillarsSection } from "@/components/cinematic/PillarsSection";
@@ -82,6 +82,7 @@ function Index() {
   return (
     <main className="relative bg-ink text-cream">
       <Preloader />
+      <ScrollProgress />
       <Header />
       <HeroSection />
       <StatsStrip />

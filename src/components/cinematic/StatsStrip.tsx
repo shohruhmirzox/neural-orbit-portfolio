@@ -13,7 +13,7 @@ function Marquee() {
             <span className="font-display px-6 text-sm uppercase tracking-wide text-cream/50">
               {item}
             </span>
-            <span className="text-emerald">✦</span>
+            <span className="h-1 w-1 rounded-full bg-emerald" />
           </span>
         ))}
       </div>
