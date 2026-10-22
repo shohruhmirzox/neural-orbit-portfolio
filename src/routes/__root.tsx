@@ -15,6 +15,9 @@ import "@fontsource/space-grotesk/600.css";
 import "@fontsource/instrument-serif/400-italic.css";
 import appCss from "../styles.css?url";
 
+// Share cards need an absolute image URL
+const SITE_URL = "https://neuralportfolio.lovable.app";
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -91,7 +94,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Neuroscience × AI × Ventures. One scroll, one orbit.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:image", content: `${SITE_URL}/media/og-portrait.jpg` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Shohruhmirzo Khudaykulov, studio portrait" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: `${SITE_URL}/media/og-portrait.jpg` },
       { name: "twitter:title", content: "Shohruhmirzo Khudaykulov" },
       {
         name: "twitter:description",

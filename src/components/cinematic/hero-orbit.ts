@@ -155,7 +155,7 @@ export class VideoScrubOrbit implements OrbitEngine {
     v.muted = true;
     v.playsInline = true;
     v.preload = "auto";
-    v.crossOrigin = "anonymous";
+    v.setAttribute("aria-hidden", "true");
     v.style.cssText =
       "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.9s ease;";
     container.prepend(v);
@@ -197,7 +197,10 @@ export class VideoScrubOrbit implements OrbitEngine {
     if (!this.ready || !this.video.duration) return;
     this.current += (this.target - this.current) * 0.18;
     const t = this.current * Math.max(0.01, this.video.duration - 0.05);
-    if (Math.abs(this.video.currentTime - t) > 0.02) {
+    // Queueing a new seek while one is still decoding makes the browser drop
+    // frames and stutter; wait for it to land, then jump to the latest target.
+    if (this.video.seeking) return;
+    if (Math.abs(this.video.currentTime - t) > 1 / 60) {
       try {
         this.video.currentTime = t;
       } catch {
@@ -330,51 +333,38 @@ export class ParticleOrbit implements OrbitEngine {
     }).catch(() => null);
     if (!img || this.disposed) return;
 
-    const S = 220; // sampling grid
+    // Sampling grid keeps the photo's aspect ratio
+    const SX = 220;
+    const SY = Math.round((SX * img.naturalHeight) / img.naturalWidth);
     const c = document.createElement("canvas");
-    c.width = c.height = S;
+    c.width = SX;
+    c.height = SY;
     const g = c.getContext("2d", { willReadFrequently: true })!;
-    g.drawImage(img, 0, 0, S, S);
-    const data = g.getImageData(0, 0, S, S).data;
+    g.drawImage(img, 0, 0, SX, SY);
+    const data = g.getImageData(0, 0, SX, SY).data;
 
-    // Estimate background color from the top corners so the flat studio
-    // backdrop drops out and only the figure remains.
-    const corner = (x0: number, y0: number) => {
-      let r = 0,
-        gr = 0,
-        b = 0,
-        n = 0;
-      for (let y = y0; y < y0 + 12; y++)
-        for (let x = x0; x < x0 + 12; x++) {
-          const k = (y * S + x) * 4;
-          r += data[k];
-          gr += data[k + 1];
-          b += data[k + 2];
-          n++;
-        }
-      return [r / n, gr / n, b / n];
-    };
-    const c1 = corner(0, 0);
-    const c2 = corner(S - 12, 0);
-    const bg = [(c1[0] + c2[0]) / 2, (c1[1] + c2[1]) / 2, (c1[2] + c2[2]) / 2];
-
+    // Low-key studio photo: dark hair and a dark textured backdrop share the
+    // same values, so keep what the light falls on rather than keying a
+    // background colour, and fade the frame edges with an oval falloff.
     const H = 132; // world height of the portrait
+    const W = (H * SX) / SY;
     const depth = 26;
     const positions: number[] = [];
     const colors: number[] = [];
     const seeds: number[] = [];
 
-    for (let y = 0; y < S; y++) {
-      for (let x = 0; x < S; x++) {
-        const k = (y * S + x) * 4;
-        const r = data[k];
-        const gr = data[k + 1];
-        const b = data[k + 2];
-        const dBg = Math.hypot(r - bg[0], gr - bg[1], b - bg[2]);
-        if (dBg < 42) continue; // background pixel
-        const lum = (0.2126 * r + 0.7152 * gr + 0.0722 * b) / 255;
-        const px = (x / S - 0.5) * H;
-        const py = (0.5 - y / S) * H;
+    for (let y = 0; y < SY; y++) {
+      for (let x = 0; x < SX; x++) {
+        const k = (y * SX + x) * 4;
+        const lum = (0.2126 * data[k] + 0.7152 * data[k + 1] + 0.0722 * data[k + 2]) / 255;
+        const ox = (x / SX - 0.5) / 0.52;
+        const oy = (y / SY - 0.42) / 0.66;
+        const falloff = 1 - Math.min(1, Math.hypot(ox, oy));
+        if (lum < 0.3 || falloff <= 0) continue;
+        // Thin out the darker mid-tones and the edges so the figure dissolves
+        if (Math.random() > Math.min(1, (lum - 0.22) * 2.2) * Math.min(1, falloff * 3)) continue;
+        const px = (x / SX - 0.5) * W;
+        const py = (0.5 - y / SY) * H;
         const pz = lum * depth - depth * 0.35 + (Math.random() - 0.5) * 2.4;
 
         // Front shell
@@ -385,7 +375,7 @@ export class ParticleOrbit implements OrbitEngine {
         // Duotone: shadows sink into deep emerald, highlights lift to cream.
         const base = EMERALD_DEEP.clone().lerp(CREAM, Math.pow(lum, 1.25));
         // Fake rim light on the silhouette edges
-        const edge = Math.min(1, Math.abs(px) / (H * 0.5) + 0.08);
+        const edge = Math.min(1, Math.abs(px) / (W * 0.5) + 0.08);
         const rim = Math.pow(edge, 3.2) * 0.85;
         const col = base.lerp(EMERALD, rim);
         for (let s = 0; s < 2; s++) {

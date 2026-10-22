@@ -3,29 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SITE, SOCIALS } from "@/lib/site-data";
 import { MEDIA } from "@/lib/media-config";
-import { AmbientVideo } from "./AmbientVideo";
-import { ClipFrame } from "./ClipFrame";
-
-function GalleryBackdrop() {
-  return (
-    <div aria-hidden className="absolute inset-0 overflow-hidden">
-      {/* A dark gallery of glowing panels receding toward the viewer */}
-      {[...Array(6)].map((_, i) => (
-        <div key={i}>
-          <div
-            className="absolute w-[2px] bg-gradient-to-b from-transparent via-emerald/35 to-transparent"
-            style={{ left: `${6 + i * 7}%`, top: "10%", height: "80%", opacity: 0.5 - i * 0.06 }}
-          />
-          <div
-            className="absolute w-[2px] bg-gradient-to-b from-transparent via-emerald/35 to-transparent"
-            style={{ right: `${6 + i * 7}%`, top: "10%", height: "80%", opacity: 0.5 - i * 0.06 }}
-          />
-        </div>
-      ))}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(23,227,136,0.12),transparent_55%)]" />
-    </div>
-  );
-}
+import { PortraitPlate } from "./PortraitPlate";
 
 export function FinaleSection() {
   const rootRef = useRef<HTMLElement>(null);
@@ -47,12 +25,35 @@ export function FinaleSection() {
       });
       gsap.from(".finale-cta", {
         y: 40,
-        opacity: 0,
+        autoAlpha: 0,
         stagger: 0.1,
         duration: 0.8,
         ease: "power3.out",
         scrollTrigger: { trigger: root, start: "top 45%", once: true },
       });
+      gsap.fromTo(
+        ".finale-plate",
+        { clipPath: "inset(18% 12% 18% 12%)" },
+        {
+          clipPath: "inset(0% 0% 0% 0%)",
+          ease: "none",
+          scrollTrigger: { trigger: ".finale-plate", start: "top 95%", end: "top 35%", scrub: 0.6 },
+        },
+      );
+      gsap.fromTo(
+        ".finale-plate .plate-media",
+        { scale: 1.28 },
+        {
+          scale: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".finale-plate",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 0.6,
+          },
+        },
+      );
     }, root);
     return () => ctx.revert();
   }, []);
@@ -65,11 +66,10 @@ export function FinaleSection() {
       id="contact"
       className="relative overflow-hidden bg-ink-soft pt-28 md:pt-40"
     >
-      <GalleryBackdrop />
-      <div className="absolute inset-0 opacity-55">
-        <AmbientVideo src="/media/closer.mp4" remoteSrc={MEDIA.CLOSER_URL} />
-      </div>
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/40 to-ink/85" />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(23,227,136,0.1),transparent_55%)]"
+      />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10">
         <h2 className="display-huge text-[15vw] text-cream md:text-[10rem]">
@@ -86,32 +86,39 @@ export function FinaleSection() {
           brains, startups and cinema.
         </p>
 
+        {/* GSAP animates the wrappers; the links keep their own CSS hover
+            transforms, which would otherwise fight the entrance tween. */}
         <div className="mt-12 flex flex-wrap items-center gap-4">
-          <a
-            href={`mailto:${SITE.email}`}
-            className="finale-cta group relative overflow-hidden rounded-full bg-emerald px-9 py-4 font-body text-xs font-semibold uppercase tracking-[0.24em] text-ink transition-transform duration-300 hover:scale-[1.04]"
-          >
-            Work with me
-          </a>
-          <a
-            href="https://t.me/shohruhmirzox"
-            target="_blank"
-            rel="noreferrer"
-            className="finale-cta rounded-full border border-cream/25 px-9 py-4 font-body text-xs font-semibold uppercase tracking-[0.24em] text-cream transition-colors duration-300 hover:border-emerald hover:text-emerald"
-          >
-            Follow the journey
-          </a>
+          <div className="finale-cta">
+            <a
+              href={`mailto:${SITE.email}`}
+              className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-emerald px-9 py-4 font-body text-xs font-semibold uppercase tracking-[0.24em] text-ink transition-transform duration-300 hover:scale-[1.04]"
+            >
+              Work with me
+              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+            </a>
+          </div>
+          <div className="finale-cta">
+            <a
+              href="https://t.me/shohruhmirzox"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex rounded-full border border-cream/25 px-9 py-4 font-body text-xs font-semibold uppercase tracking-[0.24em] text-cream transition-colors duration-300 hover:border-emerald hover:text-emerald"
+            >
+              Follow the journey
+            </a>
+          </div>
         </div>
 
-        {/* Visible clip so the closer footage is unmistakable */}
-        <div className="mt-16 w-full max-w-2xl md:mt-20">
-          <ClipFrame
-            src="/media/closer.mp4"
-            remoteSrc={MEDIA.CLOSER_URL}
-            reel="Reel 03 · Live"
-            title="The Closer"
-          />
-        </div>
+        <PortraitPlate
+          photo={MEDIA.PORTRAIT}
+          videoSrc={MEDIA.CLOSER_URL || undefined}
+          alt={`${SITE.name}, black-and-white studio portrait`}
+          position="50% 27%"
+          caption={SITE.location}
+          aside="Pearson Scholar"
+          className="finale-plate mt-16 aspect-[4/5] w-full sm:aspect-[16/9] md:mt-24 md:aspect-[21/9]"
+        />
 
         {/* Footer */}
         <footer className="mt-20 border-t border-cream/10 pb-10 pt-10 md:mt-28">

@@ -112,19 +112,17 @@
     font-weight: 400;
   }
 
-  .text-outline {
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(242, 239, 228, 0.35);
+  /* Hero surname: outlined on large screens, solid where a hairline
+     stroke would disappear into the footage */
+  .hero-outline {
+    color: rgba(23, 227, 136, 0.1);
+    -webkit-text-stroke: 1.5px rgba(23, 227, 136, 0.95);
   }
-  .text-outline-emerald {
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(23, 227, 136, 0.6);
-  }
-
-  .emerald-glow {
-    text-shadow:
-      0 0 24px rgba(23, 227, 136, 0.55),
-      0 0 80px rgba(23, 227, 136, 0.25);
+  @media (max-width: 767px) {
+    .hero-outline {
+      color: var(--emerald);
+      -webkit-text-stroke: 0;
+    }
   }
 
   /* Film grain — animated noise, sits above everything */
@@ -175,15 +173,6 @@
       ellipse at center,
       transparent 45%,
       rgba(0, 0, 0, 0.55) 100%
-    );
-  }
-
-  .scanline {
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 3px,
-      rgba(0, 0, 0, 0.18) 4px
     );
   }
 

@@ -1,4 +1,30 @@
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SITE } from "@/lib/site-data";
+
+/** Hairline across the top of the viewport showing overall page progress. */
+export function ScrollProgress() {
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    const st = ScrollTrigger.create({
+      start: 0,
+      end: "max",
+      onUpdate: (self) => {
+        if (barRef.current) barRef.current.style.transform = `scaleX(${self.progress})`;
+      },
+    });
+    return () => st.kill();
+  }, []);
+
+  return (
+    <div aria-hidden className="fixed inset-x-0 top-0 z-[95] h-[2px]">
+      <div ref={barRef} className="h-full w-full origin-left scale-x-0 bg-emerald" />
+    </div>
+  );
+}
 
 const LINKS = [
   { label: "Pillars", href: "#pillars" },

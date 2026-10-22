@@ -47,7 +47,9 @@ export function HeroSection() {
     const engines: OrbitEngine[] = [];
 
     const boot = async () => {
-      const manifest = await loadManifest("/sequences/hero/manifest.json");
+      const manifest = MEDIA.HERO_SEQUENCE_MANIFEST
+        ? await loadManifest(MEDIA.HERO_SEQUENCE_MANIFEST)
+        : null;
       if (cancelled) return;
       if (manifest !== null) {
         engine = new SequenceOrbit(canvas, manifest);
@@ -55,7 +57,7 @@ export function HeroSection() {
       } else {
         // Particles render immediately; the generated orbit clip takes over
         // once buffered. If the CDN fails, particles simply stay.
-        const particle = new ParticleOrbit(canvas, "/media/portrait.png");
+        const particle = new ParticleOrbit(canvas, MEDIA.PORTRAIT_SQUARE);
         engines.push(particle);
         engine = particle;
         if (MEDIA.HERO_ORBIT_URL) {
@@ -139,13 +141,23 @@ export function HeroSection() {
             },
           },
         })
-        .to(".hero-line-1", { xPercent: -16, ease: "none" }, 0)
-        .to(".hero-line-2", { xPercent: 16, ease: "none" }, 0)
-        .to(subRef.current, { opacity: 0, y: -30, ease: "none" }, 0)
-        .to(cueRef.current, { opacity: 0, ease: "none" }, 0)
-        .to(titleRef.current, { opacity: 0, ease: "power1.in" }, 0.28)
-        .fromTo(".hero-outro", { opacity: 0, y: 60 }, { opacity: 1, y: 0, ease: "none" }, 0.55)
-        .to(".hero-outro", { opacity: 0, y: -40, ease: "none" }, 0.88);
+        .to(".hero-line-1", { xPercent: -16, ease: "none", duration: 0.5 }, 0)
+        .to(".hero-line-2", { xPercent: 16, ease: "none", duration: 0.5 }, 0)
+        .to(subRef.current, { opacity: 0, y: -30, ease: "none", duration: 0.25 }, 0)
+        .to(cueRef.current, { opacity: 0, ease: "none", duration: 0.15 }, 0)
+        // The name must be fully gone before the interstitial line arrives
+        .to(
+          titleRef.current,
+          { opacity: 0, filter: "blur(8px)", ease: "power1.in", duration: 0.32 },
+          0.16,
+        )
+        .fromTo(
+          ".hero-outro",
+          { opacity: 0, y: 50, filter: "blur(6px)" },
+          { opacity: 1, y: 0, filter: "blur(0px)", ease: "power2.out", duration: 0.32 },
+          0.56,
+        )
+        .to(".hero-outro", { opacity: 0, y: -40, ease: "power1.in", duration: 0.24 }, 0.96);
     }, section);
 
     return () => {
@@ -168,13 +180,15 @@ export function HeroSection() {
         ref={titleRef}
         className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center"
       >
-        <h1 className="display-huge text-center text-[13.5vw] leading-[0.86] md:text-[11vw]">
-          <Line text={SITE.firstName} className="hero-line-1" />
-          <Line text={SITE.lastName} className="hero-line-2 text-outline-emerald" />
+        {/* Soft ink pool behind the type so it reads over the footage */}
+        <div className="absolute left-1/2 top-1/2 h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(5,6,5,0.62),rgba(5,6,5,0.25)_45%,transparent_70%)]" />
+        <h1 className="display-huge relative text-center text-[13.5vw] leading-[0.86] md:text-[11vw]">
+          <Line text={SITE.firstName} className="hero-line-1 text-cream" />
+          <Line text={SITE.lastName} className="hero-line-2 hero-outline" />
         </h1>
         <p
           ref={subRef}
-          className="mt-6 max-w-xl px-6 text-center font-body text-[11px] uppercase tracking-[0.34em] text-cream/70 md:text-xs"
+          className="relative mt-6 max-w-xl px-6 text-center font-body text-[11px] uppercase leading-relaxed tracking-[0.3em] text-cream/85 [text-shadow:0_1px_12px_rgba(5,6,5,0.9)] md:text-xs"
         >
           {SITE.tagline}
         </p>
@@ -183,10 +197,10 @@ export function HeroSection() {
       {/* Mid-orbit interstitial */}
       <div className="hero-outro pointer-events-none absolute inset-0 z-10 flex items-center justify-center opacity-0">
         <p className="max-w-3xl px-6 text-center">
-          <span className="font-serif-accent text-3xl italic leading-snug text-cream/90 md:text-5xl">
-            I build at the intersection of <span className="text-emerald emerald-glow">brains</span>
-            , <span className="text-emerald emerald-glow">ventures</span> and{" "}
-            <span className="text-emerald emerald-glow">stories</span>.
+          <span className="font-serif-accent text-3xl italic leading-snug text-cream [text-shadow:0_2px_24px_rgba(5,6,5,0.85)] md:text-5xl">
+            I build at the intersection of <span className="text-emerald">brains</span>,{" "}
+            <span className="text-emerald">ventures</span> and{" "}
+            <span className="text-emerald">stories</span>.
           </span>
         </p>
       </div>
